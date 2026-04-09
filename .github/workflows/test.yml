@@ -1,0 +1,38 @@
+name: QA Automation Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - name: Install dependencies
+      run: |
+        pip install selenium pytest webdriver-manager
+
+    - name: Set up Chrome
+      uses: browser-actions/setup-chrome@v1
+
+    - name: Run tests
+      run: |
+        pytest test_login.py -v --tb=short
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: .pytest_cache/
