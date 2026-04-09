@@ -1,5 +1,7 @@
 # QA Automation Test Suite
 
+[![QA Automation Tests](https://github.com/9j77k8ffzw-coder/qa-automation/actions/workflows/test.yml/badge.svg)](https://github.com/9j77k8ffzw-coder/qa-automation/actions/workflows/test.yml)
+
 A professional Selenium-based automated test suite built with Python and pytest. Tests are generated using an AI-powered test case generator and executed automatically against web applications.
 
 ## What This Is
@@ -13,6 +15,7 @@ This is a automated regression test suite for login form functionality, built as
 - pytest
 - webdriver-manager (auto manages ChromeDriver)
 - Chrome browser
+- GitHub Actions CI/CD
 
 ## Test Coverage
 
@@ -56,9 +59,13 @@ Run a specific test:
 
 pytest test_login.py::test_valid_login -v
 
+## CI/CD Pipeline
+
+This repo uses GitHub Actions to automatically run the full test suite on every push to main. The status badge above shows the current state of the pipeline.
+
 ## How It Works
 
-Each test case automatically launches Chrome, navigates to the target URL, performs the test actions, validates the expected result, and closes the browser. webdriver-manager handles ChromeDriver installation automatically so no manual setup is needed.
+Each test case automatically launches Chrome in headless mode, navigates to the target URL, performs the test actions, validates the expected result, and closes the browser. webdriver-manager handles ChromeDriver installation automatically so no manual setup is needed.
 
 ## Test Site
 
@@ -72,6 +79,7 @@ This automation suite is part of a larger QA pipeline:
 2. Test cases are documented in Notion
 3. Selenium scripts automate the execution
 4. pytest reports pass/fail results
+5. GitHub Actions runs tests automatically on every push
 
 ## Author
 
