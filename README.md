@@ -1,5 +1,9 @@
-25 tests passing in the cloud with a green badge! Your qa-automation repo is now a genuinely impressive portfolio piece.
-Let's update the README to reflect the expanded test suite. Open README.md in VS Code, select all with CMD + A, delete, and paste this updated version:
+I can see two issues:
+
+Some extra text got into the README at the top — it looks like some of my instructions accidentally got pasted in
+The README content otherwise looks great with the green passing badge
+
+Let's fix it quickly. Go to VS Code, open README.md, select all with CMD + A, delete everything, and paste this clean version:
 markdown# QA Automation Test Suite
 
 [![QA Automation Tests](https://github.com/deandremedrano/qa-automation/actions/workflows/test.yml/badge.svg)](https://github.com/deandremedrano/qa-automation/actions/workflows/test.yml)
