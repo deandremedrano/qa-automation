@@ -1,9 +1,11 @@
 import pytest
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 
 BASE_URL = "https://the-internet.herokuapp.com/login"
@@ -24,6 +26,7 @@ def driver():
     yield driver
     driver.quit()
 
+# FUNCTIONAL TESTS
 def test_valid_login(driver):
     driver.get(BASE_URL)
     driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
@@ -31,7 +34,6 @@ def test_valid_login(driver):
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     success = driver.find_element(By.ID, "flash").text
     assert "secure area" in success.lower()
-    print("TC001 PASSED - Valid login successful")
 
 def test_invalid_username(driver):
     driver.get(BASE_URL)
@@ -40,7 +42,6 @@ def test_invalid_username(driver):
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     error = driver.find_element(By.ID, "flash").text
     assert "invalid" in error.lower()
-    print("TC002 PASSED - Invalid username shows error")
 
 def test_invalid_password(driver):
     driver.get(BASE_URL)
@@ -49,14 +50,12 @@ def test_invalid_password(driver):
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     error = driver.find_element(By.ID, "flash").text
     assert "invalid" in error.lower()
-    print("TC003 PASSED - Invalid password shows error")
 
 def test_empty_fields(driver):
     driver.get(BASE_URL)
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     error = driver.find_element(By.ID, "flash").text
     assert "invalid" in error.lower()
-    print("TC004 PASSED - Empty fields shows error")
 
 def test_logout(driver):
     driver.get(BASE_URL)
@@ -65,4 +64,139 @@ def test_logout(driver):
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
     driver.find_element(By.CSS_SELECTOR, "a.button").click()
     assert "login" in driver.current_url
-    print("TC005 PASSED - Logout successful")
+
+def test_login_page_title(driver):
+    driver.get(BASE_URL)
+    assert "the internet" in driver.title.lower()
+
+def test_username_field_present(driver):
+    driver.get(BASE_URL)
+    field = driver.find_element(By.ID, "username")
+    assert field.is_displayed()
+
+def test_password_field_present(driver):
+    driver.get(BASE_URL)
+    field = driver.find_element(By.ID, "password")
+    assert field.is_displayed()
+
+def test_login_button_present(driver):
+    driver.get(BASE_URL)
+    button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    assert button.is_displayed()
+
+def test_login_button_text(driver):
+    driver.get(BASE_URL)
+    button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
+    assert "login" in button.text.lower()
+
+# EDGE CASES
+def test_empty_username_only(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_empty_password_only(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_username_with_spaces(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys("  tomsmith  ")
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_password_case_sensitive(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.ID, "password").send_keys("supersecretpassword!")
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_special_characters_username(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys("!@#$%^&*()")
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_very_long_username(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys("a" * 100)
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_very_long_password(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.ID, "password").send_keys("a" * 100)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+# NEGATIVE TESTS
+def test_sql_injection_username(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys("' OR '1'='1")
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_sql_injection_password(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.ID, "password").send_keys("' OR '1'='1")
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_numeric_only_username(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys("123456789")
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+def test_numeric_only_password(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.ID, "password").send_keys("123456789")
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    error = driver.find_element(By.ID, "flash").text
+    assert "invalid" in error.lower()
+
+# UI TESTS
+def test_page_loads_correctly(driver):
+    driver.get(BASE_URL)
+    assert driver.find_element(By.TAG_NAME, "h2").is_displayed()
+
+def test_error_message_dismissable(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    flash = driver.find_element(By.ID, "flash")
+    assert flash.is_displayed()
+
+def test_login_form_present(driver):
+    driver.get(BASE_URL)
+    form = driver.find_element(By.TAG_NAME, "form")
+    assert form.is_displayed()
+
+def test_secure_area_heading_after_login(driver):
+    driver.get(BASE_URL)
+    driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
+    driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
+    driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
+    heading = driver.find_element(By.TAG_NAME, "h2").text
+    assert "secure area" in heading.lower()
