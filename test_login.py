@@ -198,5 +198,7 @@ def test_secure_area_heading_after_login(driver):
     driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
     driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-    heading = driver.find_element(By.TAG_NAME, "h2").text
-    assert "secure area" in heading.lower()
+    heading = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.TAG_NAME, "h2"))
+    )
+    assert "secure area" in heading.text.lower()
