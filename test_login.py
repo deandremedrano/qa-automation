@@ -26,7 +26,6 @@ def driver():
     yield driver
     driver.quit()
 
-# FUNCTIONAL TESTS
 def test_valid_login(driver):
     driver.get(BASE_URL)
     driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
@@ -89,7 +88,6 @@ def test_login_button_text(driver):
     button = driver.find_element(By.CSS_SELECTOR, "button[type='submit']")
     assert "login" in button.text.lower()
 
-# EDGE CASES
 def test_empty_username_only(driver):
     driver.get(BASE_URL)
     driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
@@ -144,7 +142,6 @@ def test_very_long_password(driver):
     error = driver.find_element(By.ID, "flash").text
     assert "invalid" in error.lower()
 
-# NEGATIVE TESTS
 def test_sql_injection_username(driver):
     driver.get(BASE_URL)
     driver.find_element(By.ID, "username").send_keys("' OR '1'='1")
@@ -177,7 +174,6 @@ def test_numeric_only_password(driver):
     error = driver.find_element(By.ID, "flash").text
     assert "invalid" in error.lower()
 
-# UI TESTS
 def test_page_loads_correctly(driver):
     driver.get(BASE_URL)
     assert driver.find_element(By.TAG_NAME, "h2").is_displayed()
@@ -198,7 +194,8 @@ def test_secure_area_heading_after_login(driver):
     driver.find_element(By.ID, "username").send_keys(VALID_USERNAME)
     driver.find_element(By.ID, "password").send_keys(VALID_PASSWORD)
     driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
-    heading = WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, "h2"))
+    WebDriverWait(driver, 10).until(
+        EC.text_to_be_present_in_element((By.TAG_NAME, "h2"), "Secure Area")
     )
+    heading = driver.find_element(By.TAG_NAME, "h2")
     assert "secure area" in heading.text.lower()
